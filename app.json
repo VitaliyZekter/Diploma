@@ -1,7 +1,9 @@
 {
   "expo": {
-    "name": "yourguide",
-    "slug": "yourguide",
+    
+    "name": "v2_4",
+    "slug": "VitaliiZekter-v2",
+    "privacy":"public",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
