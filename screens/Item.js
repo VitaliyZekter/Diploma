@@ -3,6 +3,7 @@ import React, { useLayoutEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { FontAwesome, FontAwesome5, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Hyperlink from 'react-native-hyperlink';
+import { NotFound } from '../assets';
 
 
 const Item = ({ route }) => {
@@ -21,15 +22,21 @@ const Item = ({ route }) => {
         <SafeAreaView className='flex-1 bg-white relative'>
             <ScrollView className='flex-1 px-4 py-6'>
                 <View className='relative bg-white shadow-lg'>
-                    <Image
-                        source={
-                            {
-                                uri:
-                                    data?.photo?.images?.large?.url ? data?.photo?.images?.large?.url : 'https://img.freepik.com/free-vector/404-error-with-landscape-concept-illustration_114360-7888.jpg?w=2000'
-                            }
-                        }
-                        className='w-full h-80 object-cover rounded-2xl'
-                    />
+                    {data?.photo?.images?.large?.url ?
+                        <Image
+                            source={{ uri: data?.photo?.images?.large?.url }}
+                            className='w-full h-80 object-cover rounded-2xl'
+                        /> :
+                        (
+                            <>
+                                <Image
+                                    source={NotFound}
+                                    className='w-full h-80 object-cover rounded-2xl'
+                                />
+                            </>
+                        )}
+
+                 
 
                     <View className='absolute flex-row inset-x-0 top-5 justify-between px-6'>
                         <TouchableOpacity className='w-10 h-10 rounded-md items-center justify-center bg-white' onPress={() => navigation.navigate("Discover")}>
@@ -151,7 +158,7 @@ const Item = ({ route }) => {
                     {data?.email ? (
                         <View className="items-center flex-row space-x-6">
                             <FontAwesome name="envelope" size={24} color="#000" />
-                            <Text onPress={() => Linking.openURL(`mailto:${data?.email}`) } className="text-lg">{data?.email}</Text>
+                            <Text onPress={() => Linking.openURL(`mailto:${data?.email}`)} className="text-lg">{data?.email}</Text>
                         </View>
                     ) :
                         <View className='items-center flex-row space-x-6'>

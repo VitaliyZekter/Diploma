@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { FontAwesome, FontAwesome5, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getHotelsDescr, getHotelsPlacesAround, getHotelsReviews, getHotelsPhotos } from '../api/api';
 import Hyperlink from 'react-native-hyperlink';
-
+import NetInfo from "@react-native-community/netinfo";
 
 const HotelScreen = ({ route }) => {
     const navigation = useNavigation();
@@ -12,9 +12,7 @@ const HotelScreen = ({ route }) => {
 
     let id = data.hotel_id;
 
-    console.log('*************************************************************************************************')
-    console.log(data.city_name_en);
-    console.log('*************************************************************************************************')
+
     let cityName = data.city_name_en;
 
     const [placesAround, setPlacesAround] = useState([]);
@@ -23,13 +21,25 @@ const HotelScreen = ({ route }) => {
     const [rewievsData, setReviewsData] = useState([]);
     const [showPhotos, setShowPhotos] = useState(false);
     const [hotelsPhotos, setHotelsPhotos] = useState([]);
+    const [internetConnection, setInternetConnection] = useState(true);
 
 
-    useLayoutEffect(() => {
+useLayoutEffect(() => {
         navigation.setOptions({
             headerShown: false,
         })
     }, []);
+
+
+    useEffect(() => {
+        const unsubscribe = NetInfo.addEventListener((state) => {
+          console.log(state.isConnected);
+          setInternetConnection(state.isConnected);
+        });
+        return () => {
+          unsubscribe();
+        };
+      }, []);
 
     useEffect(() => {
         getHotelsDescr(id).then(item => {
@@ -133,7 +143,7 @@ const HotelScreen = ({ route }) => {
                             </View>
                             <View>
                                 <Text className="text-[#515151] capitalize">
-                                    {data?.price_breakdown.currency}
+                                    {Math.floor(data?.price_breakdown.currency)}
                                 </Text>
 
                             </View>
@@ -267,7 +277,7 @@ const HotelScreen = ({ route }) => {
 
                 <View className=" space-y-2 mt-4 bg-red-100 rounded-2xl px-4 py-2 mb-7">
 
-                    <View style={{marginLeft:75}} className=" flex-row items-center space-x-2 ">
+                    <View style={{ marginLeft: 75 }} className=" flex-row items-center space-x-2 ">
                         <MaterialCommunityIcons name="cursor-default-click" size={24} color="black" />
                         <Text className='font-bold text-xl'>Clicable links</Text>
                     </View>
@@ -299,7 +309,7 @@ const HotelScreen = ({ route }) => {
                         showPhotos ? (<>
                             <View>
                                 {
-                                    hotelsPhotos?.map((item, index) => (
+                                    internetConnection ? (hotelsPhotos?.map((item, index) => (
                                         <View key={index}>
                                             <View className='bg-emerald-100 rounded-xl mt-5'>
                                                 <Image
@@ -313,14 +323,20 @@ const HotelScreen = ({ route }) => {
                                                 />
                                             </View>
                                         </View>
-                                    ))
+                                    ))) : (
+                                        <>
+                                        <Text>This function is not available without internet acess</Text></>
+                                    )
+                                    
                                 }
                             </View>
                             <TouchableOpacity className=' bg-red-100 rounded-xl mt-4 pt-4 flex-row items-center justify-center' onPress={() => setShowPhotos(!showPhotos)}>
                                 <Text className='board board-black mb-4 font-bold'>Close</Text>
                             </TouchableOpacity>
                         </>)
-                            : (<></>)
+                            : (<>
+                            
+                            </>)
                     }
 
 
@@ -361,7 +377,7 @@ const HotelScreen = ({ route }) => {
                                     }
                                 </View>
                                 : (<View className='board board-[#000] bg-red-100 rounded-xl mt-5'>
-                                    <Text className='text-[#000]'>No reviews yet</Text>
+                                    <Text className='text-[#000]'>No reviews yet or check your internet acess</Text>
 
                                 </View>)
                             }

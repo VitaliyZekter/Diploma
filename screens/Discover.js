@@ -1,15 +1,15 @@
-import { View, Text, SafeAreaView, Image, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, SafeAreaView, Image, ActivityIndicator } from 'react-native'
 import React, { useEffect } from 'react';
 import { useLayoutEffect, useState } from 'react';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { useNavigation } from '@react-navigation/native';
-import { NotFound } from '../assets';
+
 import MenuContainer from '../components/MenuContainer';
 import { ScrollView } from 'react-native';
 import { Hotels, Restaurants, Attractions } from '../assets';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import ItemCarDontainer from '../components/ItemCarDontainer';
-import { getPlacesData,  getHotelsDest, getHotelsData } from '../api/api';
+import { getRestaurants, getHotelsDest, getHotelsData, getAttractions } from '../api/api';
 import HotelsContainer from '../components/HotelsContainer';
 import { Fontisto } from '@expo/vector-icons';
 
@@ -20,14 +20,23 @@ const Discover = () => {
 
     const [type, setType] = useState('hotels');
     const [isLoading, setisLoading] = useState(false);
-    const [mainData, setMainData] = useState([]);
+    // const [mainData, setMainData] = useState([]);
+    const [restorauntData, setRestorauntData] = useState([]);
+    const [attractionsData, setAttractionsData] = useState([]);
+
     const [hotelsData, setHotelsData] = useState([]);
     const [bl_lat, setBl_lat] = useState(null);
     const [bl_lng, setBl_lng] = useState(null);
     const [tr_lat, setTr_lat] = useState(null);
     const [tr_lng, setTr_lng] = useState(null);
-    const [city, setCity] = useState('Lviv')
-    const [dest, setDest] = useState('-1045268');
+    const [city, setCity] = useState('');
+    // const [city, setCity] = useState('Lviv')
+    const [dest, setDest] = useState('');
+    // const [dest, setDest] = useState('-1045268');
+    const HOTELS_KEY = 'hotels';
+    const DEST_KEY = 'dest';
+    const RESTAURANTS_KEY = 'restaurants';
+    const ATTRACTIONS_KEY = 'attractions';
 
     const navigation = useNavigation();
 
@@ -37,92 +46,155 @@ const Discover = () => {
         })
     }, []);
 
+
+
     useEffect(() => {
         setisLoading(true);
-        if (type != 'hotels') {
+     
 
-            getPlacesData(bl_lat, bl_lng, tr_lat, tr_lng, type).then(data => {
-                setMainData([]);
-                setTimeout(() => {
-                    setisLoading(false);
-                }, 3000)
-                setMainData(data);
-            })
+        getRestaurants(bl_lat, bl_lng, tr_lat, tr_lng, type).then(data => {
+            storeDataRestaurants(data);
+            getDataRestaurants();
 
-        }
-        // if (type == 'hotels') {
+            setTimeout(() => {
+                setisLoading(false);
+            }, 3000)
 
-        // getHotelsDest(city).then(result => {
-        //     setInterval(() => {
-        //         setisLoading(false);
-        //     }, 3000)
-        //     setDest(result);
+        })
+        
+        getAttractions(bl_lat, bl_lng, tr_lat, tr_lng, type).then(data => {
+            storeDataAttractions(data);
+            getDataAttractions();
+            setTimeout(() => {
+                setisLoading(false);
+            }, 3000)
+        })
+      
+    }, [dest]);
 
-
-        // })
-
-
-
-
-
-        // getHotelsData(dest).then(res => {
-        //     setInterval(() => {
-
-        //     }, 3000)
-        //     setHotelsData(res);
-        // });
-
-        // getHotelsData(dest).then(result =>{
-        //     setInterval(() => {
-
-        //     }, 3000)
-        //     setHotelsData(result);
-        // })
-
-        /********************************************************************** */
-        // getBookingData(bl_lat, bl_lng).then(result => {
-        //     setInterval(() => {
-        //         setisLoading(false);
-
-        //     }, 3000)
-        //     setHotelsData([]);
-        //     setHotelsData(result);
-
-        // })
-
-
-
-    }
-
-        // }
-        , [bl_lat, bl_lng, tr_lat, tr_lng, type]);
 
     useEffect(() => {
         getHotelsDest(city).then(result => {
+            // AsyncStorage.clear();
+            storeDataDest(result);
+            getData(DEST_KEY);
             setTimeout(() => {
-                // setisLoading(false);
-            }, 3000)
-            setDest(result);
+                setisLoading(false);
+            }, 6000)
         })
     }, [city])
 
 
     useEffect(() => {
+        setisLoading(true);
         getHotelsData(dest).then(res => {
+            storeDataHotels(HOTELS_KEY, res);
+            getDataHotels(HOTELS_KEY);
             setTimeout(() => {
                 setisLoading(false);
-                setHotelsData(res);
-            }, 3000)
-            
-        });
 
+            }, 5000)
+        });
 
     }, [dest])
 
 
 
 
-    // console.log({city});
+
+    const storeDataAttractions = async (value) => {
+        try {
+            if (value) {
+                const jsonValue = JSON.stringify(value);
+                await AsyncStorage.setItem(ATTRACTIONS_KEY, jsonValue);
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    const getDataAttractions = async () => {
+        try {
+
+            const jsonValue = await AsyncStorage.getItem(ATTRACTIONS_KEY);
+            setAttractionsData(JSON.parse(jsonValue));
+
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+
+    const storeDataRestaurants = async (value) => {
+        try {
+            if (value) {
+                const jsonValue = JSON.stringify(value);
+                await AsyncStorage.setItem(RESTAURANTS_KEY, jsonValue);
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    const getDataRestaurants = async () => {
+        try {
+
+            const jsonValue = await AsyncStorage.getItem(RESTAURANTS_KEY);
+            setRestorauntData(JSON.parse(jsonValue));
+
+
+          
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    const storeDataHotels = async (key, value) => {
+        try {
+            const jsonValue = JSON.stringify(value);
+            await AsyncStorage.setItem(key, jsonValue);
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+
+    const getDataHotels = async (key) => {
+        try {
+
+            const jsonValue = await AsyncStorage.getItem(key);
+            setHotelsData(JSON.parse(jsonValue));
+
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    const storeDataDest = async (value) => {
+        try {
+            if (value) {
+                await AsyncStorage.setItem(DEST_KEY, value)
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    const getData = async (key) => {
+        try {
+            const value = await AsyncStorage.getItem(key)
+            if (value !== null) {
+                console.log({ value });
+                setDest(value);
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+
+
+
     return (
         <SafeAreaView className='flex-1 bg-white relative'>
             <View className='flex-row items-center justify-between mt-10 px-8'>
@@ -139,18 +211,18 @@ const Discover = () => {
                     placeholder='Search'
                     fetchDetails={true}
                     onPress={(data, details = null) => {
-                        setType('hotels');
+                        // setType('hotels');
                         console.log(details?.geometry?.viewport);
                         setBl_lat(details?.geometry?.viewport?.southwest?.lat);
                         setBl_lng(details?.geometry?.viewport?.southwest?.lng);
                         setTr_lat(details?.geometry?.viewport?.northeast?.lat);
                         setTr_lng(details?.geometry?.viewport?.northeast?.lng);
                         setCity(data.structured_formatting.main_text);
-                        console.log(data.structured_formatting.main_text);
+                        // console.log(data.structured_formatting.main_text);
 
                     }}
                     query={{
-                        key: 'AIzaSyBSzTrERdrp242C6FmtqZ-fAO2x2VKLTfc',
+                        key: 'AIzaSyAnqneXpxXAQoa97JxII89j5Crb4k2KdPw',
                         language: 'en',
                     }}
                 />
@@ -164,24 +236,55 @@ const Discover = () => {
                     </View>
                 </View>
 
-                {isLoading ? (<ActivityIndicator size="large" color="#00ff04" />) : (<>
-                    <View className='px-4 mt-8 flex-row items-center justify-evenly flex-wrap'>
-                        {type != 'hotels' && mainData?.length > 0 ?
-                            <>
-                                {mainData?.map((data, index) => (
-                                    <ItemCarDontainer key={index}
-                                        imageSrc={data?.photo?.images?.medium?.url ? data?.photo?.images?.medium?.url : 'https://cdn-icons-png.flaticon.com/128/8281/8281994.png'}
-                                        title={data.name}
-                                        location={data?.location_string}
-                                        data={data}
-                                        isLoading={isLoading}
-                                    />
-                                ))}
+              
+
+                {isLoading ? (<ActivityIndicator size="large" color="#00ff04" />) :
+                    <>
+                        <View className='px-4 mt-8 flex-row items-center justify-evenly flex-wrap'>
+                            {type == 'attractions' && (
+                                <>
+                                    {attractionsData ? (
+                                        attractionsData?.map((data, index) => (
+                                            <ItemCarDontainer key={index}
+                                                imageSrc={data?.photo?.images?.medium?.url}
+                                                title={data.name}
+                                                location={data?.location_string}
+                                                data={data}
+                                                isLoading={isLoading}
+                                            />
+                                        ))) :
+                                        (
+                                            <Text>Bad connection or we do not have info about it</Text>
+                                        )}
+                                </>
+                            )}
+                        </View>
+
+                        <View className='px-4 mt-8 flex-row items-center justify-evenly flex-wrap'>
+                            {type == 'restaurants' && (
+                                <>
+                                    {restorauntData ? (restorauntData?.map((data, index) => (
+                                        <ItemCarDontainer key={index}
+                                            imageSrc={data?.photo?.images?.medium?.url}
+                                            title={data.name}
+                                            location={data?.location_string}
+                                            data={data}
+                                            isLoading={isLoading}
+                                        />
+                                    ))) :
+                                        (
+                                            <Text>Bad connection or we do not have info about it</Text>
+                                        )
+                                    }
+                                </>
+                            )}
+                        </View>
 
 
-                            </> : (<>
-                                {type == 'hotels' ? <>
-                                    {hotelsData?.map((data, index) =>
+                        <View className='px-4 mt-8 flex-row items-center justify-evenly flex-wrap'>
+                            {type == 'hotels' && (
+                                <>
+                                    {hotelsData ? (hotelsData?.map((data, index) =>
                                     (
                                         <HotelsContainer
                                             key={index}
@@ -189,25 +292,20 @@ const Discover = () => {
                                             title={data.hotel_name}
                                             location={data?.city_trans}
                                             data={data}
+                                            isLoading={isLoading}
                                         />
-                                    ))
+                                    )))
+                                        : (
+                                            <Text>Bad connection or we do not have info about it</Text>
+                                        )
                                     }
-                                </> : (
-                                    <>
-                                        <View className='w-full h-[400px] items-center space-y-8 justify-center'>
-                                            <Image source={NotFound} className='w-32 h-32 object-cover'></Image>
-                                            <Text className='text-2xl text-[#EF4444] font-semibold' >Wait few seconds. If the loading takes more than 10 seconds, then we don't have any information about this place. Or please check your connection.</Text>
-                                        </View>
-                                    </>)}
-
-                            </>)}
-                    </View>
-                </>)}
-
+                                </>
+                            )}
+                        </View>
+                    </>
+                }
             </ScrollView>
             <View style={{ paddingTop: 2 }} className='bg-[#EF4444] flex-row items-center justify-between px-8 rounded-t-2xl'>
-
-
                 <MenuContainer
                     key={'attractions'}
                     title='Attractions'
@@ -216,7 +314,7 @@ const Discover = () => {
                     setType={setType}
                 />
                 <MenuContainer
-                    key={'hoteels'}
+                    key={'hotels'}
                     title='Hotels'
                     imageSrc={Hotels}
                     type={type}

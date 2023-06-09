@@ -1,9 +1,10 @@
-import { View, Text, SafeAreaView, Image, TouchableOpacity, ImageBackground } from 'react-native'
+import { View, Text, SafeAreaView,  TouchableOpacity, ImageBackground } from 'react-native'
 import React, { useLayoutEffect } from 'react';
 import * as Animatable from 'react-native-animatable';
 import { useNavigation } from '@react-navigation/native';
-import { f, fourth, l, s, t } from '../assets';
+import { s } from '../assets';
 import { Entypo } from '@expo/vector-icons';
+
 
 
 const HomeScreen = () => {
@@ -36,16 +37,6 @@ const HomeScreen = () => {
                         This app was created to help in your trip. Its totally free, all for you. Enjoy the journey
                     </Text>
                 </View>
-
-                {/*
-            <View className="w-[400px] h-[400px] absolute -bottom-72 -right-8">
-                <Animatable.Image
-                    animation={'fadeIn'}
-                    easing='ease-in-out'
-                    source={l}
-                    className='w-28 h-28 object-cover mt-50 rounded-full'
-                />
-            </View> */}
 
 
 
