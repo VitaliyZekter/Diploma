@@ -222,7 +222,7 @@ const Discover = () => {
 
                     }}
                     query={{
-                        key: 'AIzaSyAnqneXpxXAQoa97JxII89j5Crb4k2KdPw',
+                        key: 'AIzaSyanqneXpxXAQpa97JxII89j5Crb4k2KdPw',
                         language: 'en',
                     }}
                 />
